@@ -19,7 +19,7 @@ var (
 )
 
 const (
-	sizeMuliplier = 1024 // KB
+	sizeMuliplier = 1 // KB
 )
 
 func main() {
@@ -50,9 +50,9 @@ func main() {
 	if n, err := io.CopyN(ioutil.Discard, conn, int64(*size)*sizeMuliplier); err != nil && n != int64(*size)*sizeMuliplier {
 		log.Fatal("failed to read payload", err)
 	} else {
-		fmt.Printf("read %d KB\n", *size)
+		fmt.Printf("read %d B\n", *size)
 	}
 
-	fmt.Println(float64(*size)/time.Since(start).Seconds(), " KB/s")
+	fmt.Println(float64(*size)/1024/time.Since(start).Seconds(), " KB/s")
 
 }
