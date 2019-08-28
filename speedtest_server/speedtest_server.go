@@ -49,7 +49,12 @@ func main() {
 }
 
 func handleConnection(conn *scion.Connection) {
-	defer conn.Close()
+	defer func() {
+		err := conn.Close()
+		if err != nil {
+			fmt.Println("failed to close conn", err)
+		}
+	}()
 	header := make([]byte, 4)
 	if err := binary.Read(conn, binary.BigEndian, &header); err != nil {
 		fmt.Println("failed to read header", err)
