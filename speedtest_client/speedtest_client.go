@@ -50,10 +50,9 @@ func main() {
 	if err := encoder.Encode(&header); err != nil {
 		log.Fatal("failed to read header", err)
 	}
+	start := time.Now()
 
 	for i := 0; i < *packets; i++ {
-
-		start := time.Now()
 
 		if n, err := io.CopyN(ioutil.Discard, conn, int64(*size)*sizeMuliplier); err != nil && n != int64(*size)*sizeMuliplier {
 			log.Fatal("failed to read payload", err)
@@ -61,6 +60,8 @@ func main() {
 			fmt.Printf("read %d B\n", *size)
 		}
 
-		fmt.Println(float64(*size)/1024/time.Since(start).Seconds(), " KB/s")
 	}
+
+	fmt.Println(float64(*size*header.Repetitions)/1024/time.Since(start).Seconds(), " KB/s")
+
 }
