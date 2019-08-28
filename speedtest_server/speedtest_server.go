@@ -56,10 +56,8 @@ func handleConnection(conn *scion.Connection) {
 
 	for i := 0; i < header.Repetitions; i++ {
 
-		if n, err := io.CopyN(conn, rand.Reader, int64(header.Size)); err != nil {
+		if _, err := io.CopyN(conn, rand.Reader, int64(header.Size)); err != nil {
 			fmt.Println("failed to send payload", err)
-		} else {
-			fmt.Printf("wrote %d bytes\n", n)
 		}
 	}
 

@@ -56,8 +56,6 @@ func main() {
 
 		if n, err := io.CopyN(ioutil.Discard, conn, int64(*size)*sizeMuliplier); err != nil && n != int64(*size)*sizeMuliplier {
 			log.Fatal("failed to read payload", err)
-		} else {
-			fmt.Printf("read %d B\n", *size)
 		}
 
 	}
