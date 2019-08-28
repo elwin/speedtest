@@ -58,7 +58,13 @@ func main() {
 			log.Fatal("failed to read payload", err)
 		}
 
+		if i%100 == 0 {
+			fmt.Print(".")
+		}
+
 	}
+
+	fmt.Println()
 
 	fmt.Println(float64(*size*header.Repetitions)/1024/time.Since(start).Seconds(), " KB/s")
 
