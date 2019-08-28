@@ -51,11 +51,11 @@ func main() {
 		if n, err := io.CopyN(ioutil.Discard, conn, int64(i)); err != nil && n != int64(i) {
 			log.Fatal("failed to read payload", err)
 		} else {
-			fmt.Printf("read %d KB\n", *size)
+			fmt.Printf("read %d KB\n", i/1024)
 		}
 
 		fmt.Println(float64(*size)/time.Since(start).Seconds(), " KB/s")
 
-		time.Sleep(10 * time.Millisecond)
+		time.Sleep(2 * time.Millisecond)
 	}
 }
