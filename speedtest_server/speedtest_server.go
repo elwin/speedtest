@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"context"
 	"crypto/rand"
 	"encoding/binary"
 	"flag"
@@ -19,47 +18,37 @@ var (
 	local = flag.String("local", "", "Local address (with Port)")
 )
 
-func registerContext() context.Context {
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
-	ctx, cancel := context.WithCancel(context.Background())
-	go func() {
-		<-c
-		cancel()
-	}()
-	return ctx
-}
-
 func main() {
 	flag.Parse()
 	if *local == "" {
 		log.Fatal("Please specify the local address using -local")
 	}
 
-	ctx := registerContext()
-
 	listener, err := scion.Listen(*local)
 	if err != nil {
 		log.Fatal("failed to listen", err)
 	}
-	defer listener.Close()
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	go func() {
+		<-c
+		listener.Close()
+		os.Exit(0)
+	}()
 
 	for {
-		select {
-		case <-ctx.Done():
-			return
-		default:
-			conn, err := listener.Accept()
-			if err != nil {
-				fmt.Println("failed to accept connection", err)
-			}
 
-			go handleConnection(ctx, conn)
+		conn, err := listener.Accept()
+		if err != nil {
+			fmt.Println("failed to accept connection", err)
 		}
+
+		go handleConnection(conn)
+
 	}
 }
 
-func handleConnection(ctx context.Context, conn *scion.Connection) {
+func handleConnection(conn *scion.Connection) {
 	defer conn.Close()
 	header := make([]byte, 4)
 	if err := binary.Read(conn, binary.BigEndian, &header); err != nil {
