@@ -66,6 +66,6 @@ func main() {
 
 	fmt.Println()
 
-	fmt.Println(float64(*size*header.Repetitions)/1024/time.Since(start).Seconds(), " KB/s")
+	fmt.Println(float64(header.Size*header.Repetitions)/1024/time.Since(start).Seconds(), " KB/s")
 
 }
