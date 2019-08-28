@@ -41,13 +41,13 @@ func main() {
 	header := make([]byte, 4)
 	binary.PutUvarint(header, uint64(*size*sizeMuliplier))
 
-	start := time.Now()
-
 	if err := binary.Write(conn, binary.BigEndian, header); err != nil {
 		log.Fatal("failed to write size", err)
 	}
 
 	for i := 0; i < 10; i++ {
+
+		start := time.Now()
 
 		if n, err := io.CopyN(ioutil.Discard, conn, int64(*size)*sizeMuliplier); err != nil && n != int64(*size)*sizeMuliplier {
 			log.Fatal("failed to read payload", err)
