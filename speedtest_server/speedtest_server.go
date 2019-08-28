@@ -50,7 +50,7 @@ func handleConnection(conn *scion.Connection) {
 
 	decoder := gob.NewDecoder(conn)
 	header := header2.Header{}
-	if err := decoder.Decode(header); err != nil {
+	if err := decoder.Decode(&header); err != nil {
 		fmt.Println("failed to decode header", err)
 	}
 
