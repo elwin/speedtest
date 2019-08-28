@@ -52,12 +52,14 @@ func handleConnection(conn *scion.Connection) {
 	header := header2.Header{}
 	if err := decoder.Decode(&header); err != nil {
 		fmt.Println("failed to decode header", err)
+		return
 	}
 
 	for i := 0; i < header.Repetitions; i++ {
 
 		if _, err := io.CopyN(conn, rand.Reader, int64(header.Size)); err != nil {
 			fmt.Println("failed to send payload", err)
+			return
 		}
 	}
 
