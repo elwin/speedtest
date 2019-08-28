@@ -38,21 +38,25 @@ func main() {
 	}
 	defer conn.Close()
 
-	header := make([]byte, 4)
-	binary.PutUvarint(header, uint64(*size*sizeMuliplier))
+	for i := 0; i < 10; i++ {
 
-	start := time.Now()
+		header := make([]byte, 4)
+		binary.PutUvarint(header, uint64(*size*sizeMuliplier))
 
-	if err := binary.Write(conn, binary.BigEndian, header); err != nil {
-		log.Fatal("failed to write size", err)
+		start := time.Now()
+
+		if err := binary.Write(conn, binary.BigEndian, header); err != nil {
+			log.Fatal("failed to write size", err)
+		}
+
+		if n, err := io.CopyN(ioutil.Discard, conn, int64(*size)*sizeMuliplier); err != nil && n != int64(*size)*sizeMuliplier {
+			log.Fatal("failed to read payload", err)
+		} else {
+			fmt.Printf("read %d B\n", *size)
+		}
+
+		fmt.Println(float64(*size)/1024/time.Since(start).Seconds(), " KB/s")
+
+		time.Sleep(2 * time.Millisecond)
 	}
-
-	if n, err := io.CopyN(ioutil.Discard, conn, int64(*size)*sizeMuliplier); err != nil && n != int64(*size)*sizeMuliplier {
-		log.Fatal("failed to read payload", err)
-	} else {
-		fmt.Printf("read %d B\n", *size)
-	}
-
-	fmt.Println(float64(*size)/1024/time.Since(start).Seconds(), " KB/s")
-
 }
