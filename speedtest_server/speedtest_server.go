@@ -1,15 +1,14 @@
 package main
 
 import (
-	"bytes"
 	"crypto/rand"
-	"encoding/binary"
+	"encoding/gob"
 	"flag"
 	"fmt"
 	"io"
 	"log"
-	"os"
-	"os/signal"
+
+	header2 "github.com/elwin/speedtest/header"
 
 	"github.com/elwin/transmit2/scion"
 )
@@ -28,13 +27,6 @@ func main() {
 	if err != nil {
 		log.Fatal("failed to listen", err)
 	}
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
-	go func() {
-		<-c
-		listener.Close()
-		os.Exit(0)
-	}()
 
 	for {
 
@@ -55,21 +47,16 @@ func handleConnection(conn *scion.Connection) {
 			fmt.Println("failed to close conn", err)
 		}
 	}()
-	header := make([]byte, 4)
-	if err := binary.Read(conn, binary.BigEndian, &header); err != nil {
-		fmt.Println("failed to read header", err)
-		return
+
+	decoder := gob.NewDecoder(conn)
+	header := header2.Header{}
+	if err := decoder.Decode(header); err != nil {
+		fmt.Println("failed to decode header", err)
 	}
 
-	length, err := binary.ReadUvarint(bytes.NewReader(header))
-	if err != nil {
-		fmt.Println("failed to read header", err)
-		return
-	}
+	for i := 0; i < header.Repetitions; i++ {
 
-	for i := 0; i < 10; i++ {
-
-		if n, err := io.CopyN(conn, rand.Reader, int64(length)); err != nil {
+		if n, err := io.CopyN(conn, rand.Reader, int64(header.Size)); err != nil {
 			fmt.Println("failed to send payload", err)
 		} else {
 			fmt.Printf("wrote %d bytes\n", n)

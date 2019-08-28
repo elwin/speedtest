@@ -1,7 +1,7 @@
 package main
 
 import (
-	"encoding/binary"
+	"encoding/gob"
 	"flag"
 	"fmt"
 	"io"
@@ -9,13 +9,16 @@ import (
 	"log"
 	"time"
 
+	header2 "github.com/elwin/speedtest/header"
+
 	"github.com/elwin/transmit2/scion"
 )
 
 var (
-	local  = flag.String("local", "", "Local address (with Port)")
-	remote = flag.String("remote", "", "Remote address (with Port)")
-	size   = flag.Int("size", 1024, "KB to be sent")
+	local   = flag.String("local", "", "Local address (with Port)")
+	remote  = flag.String("remote", "", "Remote address (with Port)")
+	size    = flag.Int("size", 1024, "bytes to be sent")
+	packets = flag.Int("packets", 1, "number of packets to be sent")
 )
 
 const (
@@ -38,14 +41,17 @@ func main() {
 	}
 	defer conn.Close()
 
-	header := make([]byte, 4)
-	binary.PutUvarint(header, uint64(*size*sizeMuliplier))
-
-	if err := binary.Write(conn, binary.BigEndian, header); err != nil {
-		log.Fatal("failed to write size", err)
+	header := header2.Header{
+		Size:        *size,
+		Repetitions: *packets,
 	}
 
-	for i := 0; i < 10; i++ {
+	encoder := gob.NewEncoder(conn)
+	if err := encoder.Encode(&header); err != nil {
+		log.Fatal("failed to read header", err)
+	}
+
+	for i := 0; i < *packets; i++ {
 
 		start := time.Now()
 
