@@ -50,7 +50,7 @@ func main() {
 	if n, err := io.CopyN(ioutil.Discard, conn, int64(*size)*sizeMuliplier); err != nil && n != int64(*size)*sizeMuliplier {
 		log.Fatal("failed to read payload", err)
 	} else {
-		fmt.Printf("read %d MB\n", *size)
+		fmt.Printf("read %d KB\n", *size)
 	}
 
 	fmt.Println(float64(*size)/time.Since(start).Seconds(), " KB/s")
