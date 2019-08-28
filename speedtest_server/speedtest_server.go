@@ -61,28 +61,25 @@ func main() {
 
 func handleConnection(ctx context.Context, conn *scion.Connection) {
 	defer conn.Close()
+	header := make([]byte, 4)
+	if err := binary.Read(conn, binary.BigEndian, &header); err != nil {
+		fmt.Println("failed to read header", err)
+		return
+	}
+
+	length, err := binary.ReadUvarint(bytes.NewReader(header))
+	if err != nil {
+		fmt.Println("failed to read header", err)
+		return
+	}
+
 	for i := 0; i < 10; i++ {
-		select {
-		case <-ctx.Done():
-			return
-		default:
-			header := make([]byte, 4)
-			if err := binary.Read(conn, binary.BigEndian, &header); err != nil {
-				fmt.Println("failed to read header", err)
-				return
-			}
 
-			length, err := binary.ReadUvarint(bytes.NewReader(header))
-			if err != nil {
-				fmt.Println("failed to read header", err)
-				return
-			}
-
-			if n, err := io.CopyN(conn, rand.Reader, int64(length)); err != nil {
-				fmt.Println("failed to send payload", err)
-			} else {
-				fmt.Printf("wrote %d bytes\n", n)
-			}
+		if n, err := io.CopyN(conn, rand.Reader, int64(length)); err != nil {
+			fmt.Println("failed to send payload", err)
+		} else {
+			fmt.Printf("wrote %d bytes\n", n)
 		}
 	}
+
 }
