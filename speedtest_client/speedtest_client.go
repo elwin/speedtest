@@ -19,7 +19,7 @@ var (
 )
 
 const (
-	sizeMuliplier = 1024 * 1024 // MB
+	sizeMuliplier = 1024 // KB
 )
 
 func main() {
@@ -53,6 +53,6 @@ func main() {
 		fmt.Printf("read %d MB\n", *size)
 	}
 
-	fmt.Println(float64(*size)/time.Since(start).Seconds(), " MB/s")
+	fmt.Println(float64(*size)/time.Since(start).Seconds(), " KB/s")
 
 }
