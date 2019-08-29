@@ -9,6 +9,8 @@ import (
 	"log"
 	"time"
 
+	"github.com/lucas-clemente/quic-go"
+
 	header2 "github.com/elwin/speedtest/header"
 
 	"github.com/elwin/transmit2/scion"
@@ -35,7 +37,12 @@ func main() {
 		log.Fatal("Please specify the remote address using -remote")
 	}
 
-	conn, err := scion.DialAddr(*local, *remote, scion.DefaultPathSelector, nil)
+	config := &quic.Config{
+		MaxReceiveStreamFlowControlWindow:     100 * 1024 * 1024,
+		MaxReceiveConnectionFlowControlWindow: 100 * 1024 * 1024,
+	}
+
+	conn, err := scion.DialAddr(*local, *remote, scion.DefaultPathSelector, config)
 	if err != nil {
 		log.Fatal("failed to connect", err)
 	}
