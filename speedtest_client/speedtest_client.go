@@ -35,7 +35,7 @@ func main() {
 		log.Fatal("Please specify the remote address using -remote")
 	}
 
-	conn, err := scion.DialAddr(*local, *remote, scion.DefaultPathSelector)
+	conn, err := scion.DialAddr(*local, *remote, scion.DefaultPathSelector, nil)
 	if err != nil {
 		log.Fatal("failed to connect", err)
 	}

@@ -23,7 +23,7 @@ func main() {
 		log.Fatal("Please specify the local address using -local")
 	}
 
-	listener, err := scion.Listen(*local)
+	listener, err := scion.Listen(*local, nil)
 	if err != nil {
 		log.Fatal("failed to listen", err)
 	}
