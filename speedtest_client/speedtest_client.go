@@ -17,7 +17,7 @@ import (
 var (
 	local   = flag.String("local", "", "Local address (with Port)")
 	remote  = flag.String("remote", "", "Remote address (with Port)")
-	size    = flag.Int("size", 1024, "bytes to be sent")
+	size    = flag.Int("size", 1000, "bytes to be sent")
 	packets = flag.Int("packets", 10000, "number of packets to be sent")
 )
 
@@ -66,6 +66,6 @@ func main() {
 
 	fmt.Println()
 
-	fmt.Println(float64(header.Size*header.Repetitions)/(1024*time.Since(start).Seconds()), " KB/s")
+	fmt.Println(float64(header.Size*header.Repetitions)/(1000*time.Since(start).Seconds()), " KB/s")
 
 }
