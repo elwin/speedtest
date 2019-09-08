@@ -18,7 +18,7 @@ var (
 	local   = flag.String("local", "", "Local address (with Port)")
 	remote  = flag.String("remote", "", "Remote address (with Port)")
 	size    = flag.Int("size", 1024, "bytes to be sent")
-	packets = flag.Int("packets", 1, "number of packets to be sent")
+	packets = flag.Int("packets", 10000, "number of packets to be sent")
 )
 
 const (
