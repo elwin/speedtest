@@ -16,7 +16,7 @@ import (
 )
 
 var (
-	local  = flag.String("local", "", "Local address (with Port)")
+	local  = flag.String("local", "", "Local address (without Port)")
 	remote = flag.String("remote", "", "Remote address (with Port)")
 )
 
@@ -58,7 +58,7 @@ func main() {
 }
 
 func test(packets, size int) time.Duration {
-	conn, err := scion.DialAddr(*local, *remote, scion.DefaultPathSelector)
+	conn, err := scion.DialAddr(*local+":0", *remote, scion.DefaultPathSelector)
 	if err != nil {
 		log.Fatal("failed to connect", err)
 	}
