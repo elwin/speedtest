@@ -9,8 +9,6 @@ import (
 	"log"
 	"time"
 
-	"github.com/lucas-clemente/quic-go"
-
 	header2 "github.com/elwin/speedtest/header"
 
 	"github.com/elwin/transmit2/scion"
@@ -37,12 +35,7 @@ func main() {
 		log.Fatal("Please specify the remote address using -remote")
 	}
 
-	config := &quic.Config{
-		MaxReceiveStreamFlowControlWindow:     100 * 1024 * 1024,
-		MaxReceiveConnectionFlowControlWindow: 100 * 1024 * 1024,
-	}
-
-	conn, err := scion.DialAddr(*local, *remote, scion.DefaultPathSelector, config)
+	conn, err := scion.DialAddr(*local, *remote, scion.DefaultPathSelector)
 	if err != nil {
 		log.Fatal("failed to connect", err)
 	}
@@ -61,11 +54,11 @@ func main() {
 
 	for i := 0; i < *packets; i++ {
 
-		if n, err := io.CopyN(ioutil.Discard, conn, int64(*size)*sizeMuliplier); err != nil && n != int64(*size)*sizeMuliplier {
+		if n, err := io.CopyN(ioutil.Discard, conn, int64(header.Size)); err != nil && n != int64(header.Size) {
 			log.Fatal("failed to read payload", err)
 		}
 
-		if i%100 == 0 {
+		if i%100 == 99 {
 			fmt.Print(".")
 		}
 
@@ -73,6 +66,6 @@ func main() {
 
 	fmt.Println()
 
-	fmt.Println(float64(header.Size*header.Repetitions)/1024/time.Since(start).Seconds(), " KB/s")
+	fmt.Println(float64(header.Size*header.Repetitions)/(1024*time.Since(start).Seconds()), " KB/s")
 
 }

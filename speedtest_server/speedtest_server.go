@@ -8,8 +8,6 @@ import (
 	"io"
 	"log"
 
-	"github.com/lucas-clemente/quic-go"
-
 	header2 "github.com/elwin/speedtest/header"
 
 	"github.com/elwin/transmit2/scion"
@@ -25,12 +23,7 @@ func main() {
 		log.Fatal("Please specify the local address using -local")
 	}
 
-	config := &quic.Config{
-		MaxReceiveStreamFlowControlWindow:     100 * 1024 * 1024,
-		MaxReceiveConnectionFlowControlWindow: 100 * 1024 * 1024,
-	}
-
-	listener, err := scion.Listen(*local, config)
+	listener, err := scion.Listen(*local)
 	if err != nil {
 		log.Fatal("failed to listen", err)
 	}
@@ -70,4 +63,12 @@ func handleConnection(conn *scion.Connection) {
 		}
 	}
 
+}
+
+var _ io.Reader = EmptyReader{}
+
+type EmptyReader struct{}
+
+func (EmptyReader) Read(p []byte) (n int, err error) {
+	return len(p), nil
 }
