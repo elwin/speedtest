@@ -42,6 +42,10 @@ func main() {
 	results := make([]Result, 0)
 
 	payload := 1000 * 1000 * 5
+
+	// warm-up
+	test(payload/10000, 10000)
+
 	for size := 100; size <= 100000; size *= 10 {
 		packets := payload / size
 		duration := test(packets, size)
