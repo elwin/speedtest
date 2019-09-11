@@ -22,6 +22,7 @@ var (
 
 const (
 	sizeMultiplier = 1000 * 1000 // MB
+	wait           = 5 * time.Second
 )
 
 type Result struct {
@@ -47,6 +48,7 @@ func main() {
 	test(payload/10000, 10000)
 
 	for size := 100; size <= 100000; size *= 10 {
+		time.Sleep(wait)
 		packets := payload / size
 		duration := test(packets, size)
 
