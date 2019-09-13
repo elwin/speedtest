@@ -7,7 +7,6 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
-	"strconv"
 	"time"
 
 	header2 "github.com/elwin/speedtest/header"
@@ -22,6 +21,8 @@ var (
 
 const (
 	sizeMultiplier = 1000 * 1000 // MB
+	payload        = sizeMultiplier * 5
+	repetitions    = 10
 	wait           = 5 * time.Second
 )
 
@@ -40,39 +41,34 @@ func main() {
 		log.Fatal("Please specify the remote address using -remote")
 	}
 
-	results := make([]Result, 0)
-
-	payload := 1000 * 1000 * 5
-
 	// warm-up
-	test(payload/10000, 10000)
+	selector := scion.DefaultPathSelector
+	test(payload, selector)
 
-	for size := 100; size <= 100000; size *= 10 {
+	var duration time.Duration
+
+	for i := 0; i < repetitions; i++ {
 		time.Sleep(wait)
-		packets := payload / size
-		duration := test(packets, size)
 
-		results = append(results, Result{duration, size})
+		duration += test(payload, selector)
 	}
 
-	fmt.Println("packet size (bytes),bandwidth (MB/s)")
-	for _, result := range results {
-		fmt.Print(strconv.Itoa(result.size) + ",")
-		fmt.Println(float64(payload) / (sizeMultiplier * result.duration.Seconds()))
-	}
+	fmt.Printf("Payload: %d\n", payload/sizeMultiplier)
+	fmt.Printf("Duration: %f\n", duration.Seconds())
 
 }
 
-func test(packets, size int) time.Duration {
-	conn, err := scion.DialAddr(*local+":0", *remote, scion.DefaultPathSelector)
+func test(payload int, selector scion.PathSelector) time.Duration {
+
+	conn, err := scion.DialAddr(*local+":0", *remote, selector)
 	if err != nil {
 		log.Fatal("failed to connect", err)
 	}
 	defer conn.Close()
 
 	header := header2.Header{
-		Size:        size,
-		Repetitions: packets,
+		Size:        payload,
+		Repetitions: 1,
 	}
 
 	encoder := gob.NewEncoder(conn)
@@ -82,12 +78,8 @@ func test(packets, size int) time.Duration {
 
 	start := time.Now()
 
-	for i := 0; i < packets; i++ {
-
-		if n, err := io.CopyN(ioutil.Discard, conn, int64(header.Size)); err != nil && n != int64(header.Size) {
-			log.Fatal("failed to read payload", err)
-		}
-
+	if n, err := io.CopyN(ioutil.Discard, conn, int64(header.Size)); err != nil && n != int64(header.Size) {
+		log.Fatal("failed to read payload", err)
 	}
 
 	return time.Since(start)
