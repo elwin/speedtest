@@ -15,15 +15,21 @@ import (
 )
 
 var (
-	local   = flag.String("local", "", "Local address (with Port)")
-	remote  = flag.String("remote", "", "Remote address (with Port)")
-	size    = flag.Int("size", 1000, "bytes to be sent")
-	packets = flag.Int("packets", 10000, "number of packets to be sent")
+	local  = flag.String("local", "", "Local address (without Port)")
+	remote = flag.String("remote", "", "Remote address (with Port)")
 )
 
 const (
-	sizeMuliplier = 1 // KB
+	sizeMultiplier = 1000 * 1000 // MB
+	payload        = sizeMultiplier * 5
+	repetitions    = 10
+	wait           = 5 * time.Second
 )
+
+type Result struct {
+	duration time.Duration
+	size     int
+}
 
 func main() {
 	flag.Parse()
@@ -35,37 +41,46 @@ func main() {
 		log.Fatal("Please specify the remote address using -remote")
 	}
 
-	conn, err := scion.DialAddr(*local, *remote, scion.DefaultPathSelector)
+	// warm-up
+	selector := scion.DefaultPathSelector
+	test(payload, selector)
+
+	var duration time.Duration
+
+	for i := 0; i < repetitions; i++ {
+		time.Sleep(wait)
+
+		duration += test(payload, selector)
+	}
+
+	fmt.Printf("Payload: %d\n", payload/sizeMultiplier)
+	fmt.Printf("Duration (s): %f\n", duration.Seconds()/repetitions)
+
+}
+
+func test(payload int, selector scion.PathSelector) time.Duration {
+
+	conn, err := scion.DialAddr(*local+":0", *remote, selector)
 	if err != nil {
 		log.Fatal("failed to connect", err)
 	}
 	defer conn.Close()
 
 	header := header2.Header{
-		Size:        *size,
-		Repetitions: *packets,
+		Size:        payload,
+		Repetitions: 1,
 	}
 
 	encoder := gob.NewEncoder(conn)
 	if err := encoder.Encode(&header); err != nil {
 		log.Fatal("failed to read header", err)
 	}
+
 	start := time.Now()
 
-	for i := 0; i < *packets; i++ {
-
-		if n, err := io.CopyN(ioutil.Discard, conn, int64(header.Size)); err != nil && n != int64(header.Size) {
-			log.Fatal("failed to read payload", err)
-		}
-
-		if i%100 == 99 {
-			fmt.Print(".")
-		}
-
+	if n, err := io.CopyN(ioutil.Discard, conn, int64(header.Size)); err != nil && n != int64(header.Size) {
+		log.Fatal("failed to read payload", err)
 	}
 
-	fmt.Println()
-
-	fmt.Println(float64(header.Size*header.Repetitions)/(1000*time.Since(start).Seconds()), " KB/s")
-
+	return time.Since(start)
 }
