@@ -11,7 +11,7 @@ import (
 
 	header2 "github.com/elwin/speedtest/header"
 
-	"github.com/elwin/transmit2/scion"
+	"github.com/elwin/scionFTP/scion"
 )
 
 var (
