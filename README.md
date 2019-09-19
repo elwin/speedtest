@@ -10,7 +10,7 @@ go install github.com/elwin/speedtest/speedtest_client
 ```
 
 ## Server
-```
+```go
 $ speedtest_server -h
 Usage of speedtest_server:
   -local string
@@ -19,7 +19,7 @@ Usage of speedtest_server:
 ```
 
 ## Client
-```
+```go
 $ speedtest_client -h
 Usage of speedtest_client:
   -local string
